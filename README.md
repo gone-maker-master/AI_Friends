@@ -13,10 +13,11 @@ Expo、React Native、Firebaseを使用した、スマートフォン向けAI彼
 
 ## 技術スタック
 
-- **Expo**: React Native開発フレームワーク
-- **Expo Router**: ファイルベースのルーティング
+- **Expo SDK 54**: React Native開発フレームワーク（最新版）
+- **Expo Router 4**: ファイルベースのルーティング
+- **React Native 0.76**: クロスプラットフォーム対応
 - **TypeScript**: 型安全な開発
-- **Firebase (Web SDK)**: 認証とデータストレージ
+- **Firebase 11 (Web SDK)**: 認証とデータストレージ
   - Firebase Auth (匿名認証)
   - Cloud Firestore (データベース)
 - **OpenAI GPT-4**: 自然言語処理とAI会話
