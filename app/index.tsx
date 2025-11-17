@@ -1,11 +1,11 @@
 import React, {useState, useEffect} from 'react';
 import {StatusBar} from 'react-native';
-import PersonalitySelectionScreen from './src/screens/PersonalitySelectionScreen';
-import ChatScreen from './src/screens/ChatScreen';
-import {Personality} from './src/types';
-import firebaseService from './src/services/firebase';
+import PersonalitySelectionScreen from '../src/screens/PersonalitySelectionScreen';
+import ChatScreen from '../src/screens/ChatScreen';
+import {Personality} from '../src/types';
+import firebaseService from '../src/services/firebase';
 
-function App(): React.JSX.Element {
+export default function Index() {
   const [selectedPersonality, setSelectedPersonality] = useState<Personality | null>(null);
 
   useEffect(() => {
@@ -44,5 +44,3 @@ function App(): React.JSX.Element {
     </>
   );
 }
-
-export default App;

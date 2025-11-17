@@ -76,3 +76,13 @@ yarn-error.log
 # Environment
 .env
 .env.local
+
+# Expo
+.expo/
+.expo-shared/
+dist/
+web-build/
+
+# Firebase config files (should be added manually)
+google-services.json
+GoogleService-Info.plist

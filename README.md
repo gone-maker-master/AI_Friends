@@ -1,6 +1,6 @@
 # AI Companion - AI彼氏彼女アプリ
 
-React NativeとFirebaseを使用した、スマートフォン向けAI彼氏彼女アプリです。GPT-4を使用して、自然な会話と相手の好みのプロファイリングを実現します。
+Expo、React Native、Firebaseを使用した、スマートフォン向けAI彼氏彼女アプリです。GPT-4を使用して、自然な会話と相手の好みのプロファイリングを実現します。
 
 ## 主な機能
 
@@ -9,12 +9,14 @@ React NativeとFirebaseを使用した、スマートフォン向けAI彼氏彼�
 - 📝 **ユーザープロファイリング**: 会話を通じてユーザーの好みや趣味を記憶
 - 💾 **会話履歴の保存**: Firestoreで会話履歴とユーザー情報を保存
 - 🔄 **リアルタイム同期**: 複数デバイスでの同期が可能
+- 📱 **Expo Go対応**: 開発中はExpo Goアプリで簡単にテスト可能
 
 ## 技術スタック
 
-- **React Native**: クロスプラットフォーム開発
+- **Expo**: React Native開発フレームワーク
+- **Expo Router**: ファイルベースのルーティング
 - **TypeScript**: 型安全な開発
-- **Firebase**: 認証とデータストレージ
+- **Firebase (Web SDK)**: 認証とデータストレージ
   - Firebase Auth (匿名認証)
   - Cloud Firestore (データベース)
 - **OpenAI GPT-4**: 自然言語処理とAI会話
@@ -25,8 +27,7 @@ React NativeとFirebaseを使用した、スマートフォン向けAI彼氏彼�
 
 - Node.js 18以上
 - npm または yarn
-- Android Studio (Android開発の場合)
-- Xcode (iOS開発の場合、macOSのみ)
+- Expo Go アプリ (スマートフォンでテストする場合)
 
 ### 1. リポジトリのクローン
 
@@ -49,24 +50,32 @@ yarn install
 
 1. [Firebase Console](https://console.firebase.google.com/)にアクセス
 2. 新しいプロジェクトを作成
-3. Authenticationを有効化し、匿名ログインを有効にする
-4. Cloud Firestoreを有効化
+3. Authenticationを有効化し、**匿名ログイン**を有効にする
+4. Cloud Firestoreを有効化（テストモードで開始可能）
 
-#### Android用Firebase設定
-
-1. Firebase Consoleでプロジェクト設定を開く
-2. Androidアプリを追加
-   - パッケージ名: `com.aicompanion`
-3. `google-services.json`をダウンロード
-4. `android/app/`ディレクトリに配置
-
-#### iOS用Firebase設定
+#### Firebase Web設定
 
 1. Firebase Consoleでプロジェクト設定を開く
-2. iOSアプリを追加
-   - バンドルID: `com.aicompanion`
-3. `GoogleService-Info.plist`をダウンロード
-4. `ios/AICompanion/`ディレクトリに配置
+2. **Webアプリ**を追加（</> アイコン）
+3. アプリのニックネームを入力（例: "AI Companion"）
+4. Firebase設定オブジェクトをコピー
+
+#### Firebase設定の追加
+
+`src/services/firebase.ts`ファイルの`firebaseConfig`オブジェクトを、Firebase Consoleから取得した設定に置き換えます:
+
+```typescript
+const firebaseConfig = {
+  apiKey: "your-api-key",
+  authDomain: "your-project.firebaseapp.com",
+  projectId: "your-project-id",
+  storageBucket: "your-project.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:abcdef123456",
+};
+```
+
+または、`.env`ファイルで環境変数として設定できます（推奨）。
 
 ### 4. OpenAI API設定
 
@@ -77,65 +86,70 @@ yarn install
 cp .env.example .env
 ```
 
-3. `.env`ファイルにAPIキーを設定:
+3. `.env`ファイルにAPIキーとFirebase設定を追加:
 
 ```
-OPENAI_API_KEY=your_actual_api_key_here
+OPENAI_API_KEY=your_actual_openai_api_key_here
+FIREBASE_API_KEY=your_firebase_api_key
+FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain
+FIREBASE_PROJECT_ID=your_firebase_project_id
+FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
+FIREBASE_MESSAGING_SENDER_ID=your_firebase_messaging_sender_id
+FIREBASE_APP_ID=your_firebase_app_id
 ```
 
 **重要**: プロダクション環境では、APIキーをクライアントに直接埋め込むのではなく、バックエンドプロキシを経由してAPIを呼び出すことを強く推奨します。
 
-### 5. iOSの追加設定 (macOSの場合)
+### 5. アプリの起動
 
-```bash
-cd ios
-pod install
-cd ..
-```
-
-### 6. アプリの起動
-
-#### Android
-
-```bash
-npm run android
-# または
-yarn android
-```
-
-#### iOS
-
-```bash
-npm run ios
-# または
-yarn ios
-```
-
-#### Metro Bundlerの起動（別ターミナル）
+#### 開発サーバーの起動
 
 ```bash
 npm start
 # または
-yarn start
+npx expo start
+```
+
+#### Expo Goでテスト（最も簡単）
+
+1. スマートフォンに[Expo Go](https://expo.dev/client)アプリをインストール
+2. `npm start`実行後に表示されるQRコードをスキャン
+3. アプリが起動します
+
+#### Android/iOSエミュレータで実行
+
+```bash
+# Android
+npm run android
+
+# iOS (macOSのみ)
+npm run ios
+```
+
+#### Webで実行
+
+```bash
+npm run web
 ```
 
 ## プロジェクト構造
 
 ```
 AI_Friends/
+├── app/
+│   ├── _layout.tsx                         # Expo Routerレイアウト
+│   └── index.tsx                           # メイン画面（エントリーポイント）
 ├── src/
 │   ├── screens/
 │   │   ├── PersonalitySelectionScreen.tsx  # 性格選択画面
 │   │   └── ChatScreen.tsx                  # チャット画面
 │   ├── services/
-│   │   ├── firebase.ts                     # Firebase サービス
+│   │   ├── firebase.ts                     # Firebase サービス (Web SDK)
 │   │   └── openai.ts                       # OpenAI サービス
 │   └── types/
 │       └── index.ts                        # TypeScript型定義
-├── android/                                # Android設定
-├── ios/                                    # iOS設定
-├── App.tsx                                 # メインアプリコンポーネント
-├── index.js                                # エントリーポイント
+├── assets/                                 # 画像などのアセット
+├── app.json                                # Expo設定
 └── package.json                            # 依存関係
 ```
 
@@ -191,30 +205,38 @@ model: 'gpt-4-turbo', // または 'gpt-4o-mini' でコスト削減
 
 ## トラブルシューティング
 
-### Android ビルドエラー
+### Expo開発サーバーのリセット
 
 ```bash
-cd android
-./gradlew clean
-cd ..
-npm run android
+npx expo start -c
+# または
+npm start -- -c
 ```
 
-### iOS ビルドエラー
+### キャッシュのクリア
 
 ```bash
-cd ios
-pod deintegrate
-pod install
-cd ..
-npm run ios
+npx expo start --clear
 ```
 
-### Metro Bundler のリセット
+### Expoのアップデート
 
 ```bash
-npm start -- --reset-cache
+npm install expo@latest
+npx expo install --fix
 ```
+
+### Firebase接続エラー
+
+1. Firebase設定が正しいか確認
+2. Firebase Consoleで匿名認証が有効になっているか確認
+3. Firestoreのルールが適切に設定されているか確認
+
+### OpenAI APIエラー
+
+1. APIキーが正しく設定されているか確認
+2. OpenAIアカウントに十分なクレジットがあるか確認
+3. API使用量の制限に達していないか確認
 
 ## ライセンス
 

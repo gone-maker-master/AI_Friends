@@ -1,14 +1,47 @@
-import firestore from '@react-native-firebase/firestore';
-import auth from '@react-native-firebase/auth';
+import { initializeApp } from 'firebase/app';
+import { getAuth, signInAnonymously, Auth } from 'firebase/auth';
+import {
+  getFirestore,
+  collection,
+  doc,
+  addDoc,
+  getDoc,
+  getDocs,
+  setDoc,
+  query,
+  orderBy,
+  serverTimestamp,
+  Firestore,
+} from 'firebase/firestore';
 import {Message, UserProfile} from '../types';
+
+// Firebase configuration
+// Replace these with your actual Firebase config from Firebase Console
+const firebaseConfig = {
+  apiKey: process.env.FIREBASE_API_KEY || "your-api-key",
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN || "your-auth-domain",
+  projectId: process.env.FIREBASE_PROJECT_ID || "your-project-id",
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET || "your-storage-bucket",
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || "your-sender-id",
+  appId: process.env.FIREBASE_APP_ID || "your-app-id",
+};
 
 class FirebaseService {
   private userId: string | null = null;
+  private app;
+  private auth: Auth;
+  private db: Firestore;
+
+  constructor() {
+    this.app = initializeApp(firebaseConfig);
+    this.auth = getAuth(this.app);
+    this.db = getFirestore(this.app);
+  }
 
   async initializeUser() {
     try {
       // Anonymous auth for simplicity
-      const userCredential = await auth().signInAnonymously();
+      const userCredential = await signInAnonymously(this.auth);
       this.userId = userCredential.user.uid;
       return this.userId;
     } catch (error) {
@@ -21,14 +54,16 @@ class FirebaseService {
     if (!this.userId) await this.initializeUser();
 
     try {
-      await firestore()
-        .collection('users')
-        .doc(this.userId!)
-        .collection('messages')
-        .add({
-          ...message,
-          timestamp: firestore.FieldValue.serverTimestamp(),
-        });
+      const messagesRef = collection(
+        this.db,
+        'users',
+        this.userId!,
+        'messages'
+      );
+      await addDoc(messagesRef, {
+        ...message,
+        timestamp: serverTimestamp(),
+      });
     } catch (error) {
       console.error('Error saving message:', error);
     }
@@ -38,12 +73,14 @@ class FirebaseService {
     if (!this.userId) await this.initializeUser();
 
     try {
-      const snapshot = await firestore()
-        .collection('users')
-        .doc(this.userId!)
-        .collection('messages')
-        .orderBy('timestamp', 'asc')
-        .get();
+      const messagesRef = collection(
+        this.db,
+        'users',
+        this.userId!,
+        'messages'
+      );
+      const q = query(messagesRef, orderBy('timestamp', 'asc'));
+      const snapshot = await getDocs(q);
 
       return snapshot.docs.map(doc => {
         const data = doc.data();
@@ -64,13 +101,15 @@ class FirebaseService {
     if (!this.userId) await this.initializeUser();
 
     try {
-      await firestore()
-        .collection('users')
-        .doc(this.userId!)
-        .set({
+      const userRef = doc(this.db, 'users', this.userId!);
+      await setDoc(
+        userRef,
+        {
           profile,
-          updatedAt: firestore.FieldValue.serverTimestamp(),
-        }, {merge: true});
+          updatedAt: serverTimestamp(),
+        },
+        {merge: true}
+      );
     } catch (error) {
       console.error('Error saving user profile:', error);
     }
@@ -80,12 +119,13 @@ class FirebaseService {
     if (!this.userId) await this.initializeUser();
 
     try {
-      const doc = await firestore()
-        .collection('users')
-        .doc(this.userId!)
-        .get();
+      const userRef = doc(this.db, 'users', this.userId!);
+      const docSnap = await getDoc(userRef);
 
-      return doc.data()?.profile || null;
+      if (docSnap.exists()) {
+        return docSnap.data()?.profile || null;
+      }
+      return null;
     } catch (error) {
       console.error('Error getting user profile:', error);
       return null;
@@ -96,13 +136,15 @@ class FirebaseService {
     if (!this.userId) await this.initializeUser();
 
     try {
-      await firestore()
-        .collection('users')
-        .doc(this.userId!)
-        .set({
+      const userRef = doc(this.db, 'users', this.userId!);
+      await setDoc(
+        userRef,
+        {
           personalityId,
-          updatedAt: firestore.FieldValue.serverTimestamp(),
-        }, {merge: true});
+          updatedAt: serverTimestamp(),
+        },
+        {merge: true}
+      );
     } catch (error) {
       console.error('Error saving personality:', error);
     }
@@ -112,12 +154,13 @@ class FirebaseService {
     if (!this.userId) await this.initializeUser();
 
     try {
-      const doc = await firestore()
-        .collection('users')
-        .doc(this.userId!)
-        .get();
+      const userRef = doc(this.db, 'users', this.userId!);
+      const docSnap = await getDoc(userRef);
 
-      return doc.data()?.personalityId || null;
+      if (docSnap.exists()) {
+        return docSnap.data()?.personalityId || null;
+      }
+      return null;
     } catch (error) {
       console.error('Error getting personality:', error);
       return null;
